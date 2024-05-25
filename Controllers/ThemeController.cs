@@ -18,7 +18,6 @@ public class ThemeController : Controller
         _userManager = userManager;
     }
 
-    [Authorize]
     public async Task<IActionResult> Index(int page = 1)
     {
         int pageSize = 3;                
@@ -50,7 +49,7 @@ public class ThemeController : Controller
     {
         int? userId = Convert.ToInt32(_userManager.GetUserId(User));
         theme.UserId = userId.Value;
-        theme.DateOfCreation = DateTime.UtcNow;
+        theme.DateOfCreation = DateTime.UtcNow.AddHours(6);
         if (ModelState.IsValid)
         {
             _context.Add(theme);
@@ -60,7 +59,6 @@ public class ThemeController : Controller
         return View(theme);
     }
     
-    [Authorize]
     public async Task<IActionResult> Details(int? themeId, int page = 1)
     {
         int pageSize = 5;
@@ -119,7 +117,7 @@ public class ThemeController : Controller
         {
             ThemeId = themeId,
             Text = text,
-            DateOfSend = DateTime.UtcNow,
+            DateOfSend = DateTime.UtcNow.AddHours(6),
             UserId = userId.Value
         };
 
