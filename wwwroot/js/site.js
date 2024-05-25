@@ -27,3 +27,44 @@ $(document).ready(function () {
         }
     });
 });
+
+$(document).ready(function () {
+    $('#reply-button').on('click', function () {
+        var replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+        replyModal.show();
+    });
+
+    $('#message-form').on('submit', function (e) {
+        e.preventDefault();
+        var form = $(this);
+        var actionUrl = '/Theme/AddMessage';
+        $.ajax({
+            type: 'POST',
+            url: actionUrl,
+            data: form.serialize(),
+            success: function (response) {
+                if (response.success) {
+                    var newMessageHtml = '<tr>' +
+                        '<td>' + response.message.userNickName + '</td>' +
+                        '<td>' + response.message.text + '</td>' +
+                        '<td>' + response.message.dateOfSend + '</td>' +
+                        '</tr>';
+                    $('#messages').append(newMessageHtml);
+                    $('#text').val('');
+                    $('#replyModal').modal('hide');
+                    $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
+                } else {
+                    $('#error-message').text('Произошла ошибка при добавлении комментария.');
+                }
+            },
+            error: function (response) {
+                console.error("Error response:", response);
+                var errorMessage = "Произошла ошибка при добавлении комментария.";
+                if (response.responseText) {
+                    errorMessage += " " + response.responseText;
+                }
+                $('#error-message').text(errorMessage);
+            }
+        });
+    });
+});
