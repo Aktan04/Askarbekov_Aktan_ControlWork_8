@@ -6,4 +6,5 @@ public class User : IdentityUser<int>
 {
     public string Avatar { get; set; }
     public string NickName { get; set; }
+    public ICollection<Message>? Messages { get; set; }
 }
