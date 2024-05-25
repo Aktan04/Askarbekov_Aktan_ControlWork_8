@@ -49,7 +49,7 @@ public class ThemeController : Controller
     {
         int? userId = Convert.ToInt32(_userManager.GetUserId(User));
         theme.UserId = userId.Value;
-        theme.DateOfCreation = DateTime.UtcNow.AddHours(6);
+        theme.DateOfCreation = DateTime.UtcNow;
         if (ModelState.IsValid)
         {
             _context.Add(theme);
@@ -117,7 +117,7 @@ public class ThemeController : Controller
         {
             ThemeId = themeId,
             Text = text,
-            DateOfSend = DateTime.UtcNow.AddHours(6),
+            DateOfSend = DateTime.UtcNow,
             UserId = userId.Value
         };
 

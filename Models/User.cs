@@ -12,4 +12,12 @@ public class User : IdentityUser<int>
     public ICollection<Message>? Messages { get; set; }
     [NotMapped]
     public IFormFile? ImageFile { get; set; }
+    [NotMapped]
+    public int MessageCount
+    {
+        get
+        {
+            return Messages?.Count() ?? 0;
+        }
+    }
 }

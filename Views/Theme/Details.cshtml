@@ -34,7 +34,10 @@
             {
                 <tr>
                     <td><img src="@message.User?.Avatar" alt="Avatar" width="50" height="50" /></td>
-                    <td>@message.User?.NickName</td>
+                    <td>@message.User?.NickName
+                        <br />
+                        <small>Сообщений: @message.User?.MessageCount</small>
+                    </td>
                     <td>@message.Text</td>
                     <td>@message.DateOfSend</td>
                 </tr>
