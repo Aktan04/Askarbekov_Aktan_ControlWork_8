@@ -1,0 +1,71 @@
+@model Forum.ViewModels.ThemeIndexViewModel
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Темы форума</h2>
+@if (User.Identity.IsAuthenticated)
+{
+    <a class="btn btn-primary" asp-action="Create" asp-controller="Theme">Создать новую тему</a>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Дата создания</th>
+            <th>Автор</th>
+            <th>Количество ответов</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var theme in Model.Themes)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-controller="Theme" asp-route-themeId="@theme.Id">@theme.Title</a>
+                </td>
+                <td>@theme.DateOfCreation</td>
+                <td>@theme.User?.NickName</td>
+                <td>@(theme.Messages?.Count ?? 0)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (Model.PageViewModel.HasPreviousPage)
+
+{
+
+    <a asp-action="Index"
+
+       asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
+
+       class="btn btn-default btn">
+
+        <i class="glyphicon glyphicon-chevron-left"></i>
+
+        Назад
+
+    </a>
+
+}
+
+@if (Model.PageViewModel.HasNextPage)
+
+{
+
+    <a asp-action="Index"
+
+       asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
+
+       class="btn btn-default btn">
+
+        Вперед
+
+        <i class="glyphicon glyphicon-chevron-right"></i>
+
+    </a>
+
+}

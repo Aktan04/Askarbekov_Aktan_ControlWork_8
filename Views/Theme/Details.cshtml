@@ -1,0 +1,70 @@
+@model Theme
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>@Model.Title</h2>
+<p><strong>Автор:</strong> @Model.User?.NickName</p>
+<p><strong>Дата создания:</strong> @Model.DateOfCreation</p>
+<p>@Model.Description</p>
+<button id="reply-button" class="btn btn-primary">Ответить</button>
+
+<h3>Комментарии</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Автор</th>
+            <th>Комментарий</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+    <tbody id="messages">
+    @if (Model.Messages.Count > 0)
+    {
+        
+        @foreach (var message in Model.Messages)
+        {
+            <tr >
+                <td>@message.User?.NickName</td>
+                <td>@message.Text</td>
+                <td>@message.DateOfSend</td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="3">Пока сообщений не добавлено</td>
+        </tr>
+
+    }
+    </tbody>
+</table>
+<div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="replyModalLabel">Добавить комментарий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="message-form">
+                    <div class="form-group">
+                        <label for="text">Комментарий:</label>
+                        <textarea id="text" name="text" class="form-control"></textarea>
+                        <input type="hidden" id="themeId" name="themeId" value="@Model.Id" />
+                        <span class="text-danger" id="error-message"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
