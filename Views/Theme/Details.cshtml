@@ -14,11 +14,12 @@
 <h3>Комментарии</h3>
 <table class="table">
     <thead>
-        <tr>
-            <th>Автор</th>
-            <th>Комментарий</th>
-            <th>Дата</th>
-        </tr>
+    <tr>
+        <th></th>
+        <th>Автор</th>
+        <th>Комментарий</th>
+        <th>Дата</th>
+    </tr>
     </thead>
     <tbody id="messages">
     @if (Model.Messages.Count > 0)
@@ -26,7 +27,8 @@
         
         @foreach (var message in Model.Messages)
         {
-            <tr >
+            <tr>
+                <td><img src="@message.User?.Avatar" alt="Avatar" width="50" height="50" /></td>
                 <td>@message.User?.NickName</td>
                 <td>@message.Text</td>
                 <td>@message.DateOfSend</td>

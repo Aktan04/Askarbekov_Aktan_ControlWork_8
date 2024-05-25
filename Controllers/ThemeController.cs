@@ -106,7 +106,8 @@ public class ThemeController : Controller
             {
                 UserNickName = messageWithUser.User?.NickName,
                 Text = messageWithUser.Text,
-                DateOfSend = messageWithUser.DateOfSend.ToString("g")
+                DateOfSend = messageWithUser.DateOfSend.ToString("g"),
+                Avatar = messageWithUser.User?.Avatar
             }
         });
     }

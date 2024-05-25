@@ -45,6 +45,7 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.success) {
                     var newMessageHtml = '<tr>' +
+                        '<td><img src="' + response.message.avatar + '" alt="Avatar" width="50" height="50" /></td>' +
                         '<td>' + response.message.userNickName + '</td>' +
                         '<td>' + response.message.text + '</td>' +
                         '<td>' + response.message.dateOfSend + '</td>' +
