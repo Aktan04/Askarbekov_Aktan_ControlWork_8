@@ -1,7 +1,9 @@
 using Forum.Models;
 using Forum.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Forum.Controllers;
@@ -20,7 +22,22 @@ public class AccountController : Controller
         _hostEnvironment = hostEnvironment;
         _context = context;
     }
-    
+    [Authorize]
+    public async Task<IActionResult> Profile(int? userId)
+    {
+        if (userId != null)
+        {
+            var getUser = _context.Users.Include(u => u.Messages).FirstOrDefault(u => u.Id == userId);
+            return View(getUser);
+        }
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound("Пользователь не найден");
+        }
+
+        return View(user);
+    }
     [HttpGet]
     public IActionResult Login(string returnUrl = null)
     {
