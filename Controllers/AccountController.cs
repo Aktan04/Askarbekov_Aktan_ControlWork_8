@@ -38,6 +38,64 @@ public class AccountController : Controller
 
         return View(user);
     }
+
+    [Authorize]
+    public async Task<IActionResult> Edit()
+    {
+        int? userId = Convert.ToInt32(_userManager.GetUserId(User));
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        return View(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(User user)
+    {
+        User identityUser = await _userManager.FindByEmailAsync(user.Email);
+        if (identityUser != null)
+        {
+            
+            if (ModelState.IsValid)
+            {
+                if (user.ImageFile != null && user.ImageFile.Length > 0)
+                {
+                    
+                    var uploadPath = Path.Combine(_hostEnvironment.WebRootPath, "images");
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(user.ImageFile.FileName);
+                    var fullPath = Path.Combine(uploadPath, fileName);
+                    
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await user.ImageFile.CopyToAsync(fileStream);
+                    }
+                    
+                    user.Avatar = "/images/" + fileName;
+                }
+
+                identityUser.NickName = user.NickName;
+                identityUser.Avatar = user.Avatar;
+                var result = await _userManager.UpdateAsync(identityUser);
+                if (result.Succeeded)
+                {
+                   
+                    return RedirectToAction("Profile", "Account");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                    
+            }
+        }
+        
+
+        return View(user);
+    }
     [HttpGet]
     public IActionResult Login(string returnUrl = null)
     {

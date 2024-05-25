@@ -21,6 +21,7 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Никнейм:</strong> <span id="userNickName">@Model.NickName</span></li>
                         <li class="list-group-item"><strong>Количество сообщений</strong> <span >@(Model.Messages?.Count ?? 0) </span></li>
+                        <li class="list-group-item"><a class="btn btn-primary" asp-action="Edit" asp-controller="Account">Редактировать</a></li>
                     </ul>
                 </div>
             </div>
