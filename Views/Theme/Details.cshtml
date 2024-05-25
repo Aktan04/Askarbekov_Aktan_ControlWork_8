@@ -1,49 +1,73 @@
-@model Theme
+@model Forum.ViewModels.MessageIndexViewModel
 
 @{
     ViewBag.Title = "title";
     Layout = "_Layout";
 }
 
-<h2>@Model.Title</h2>
-<p><strong>Автор:</strong> @Model.User?.NickName</p>
-<p><strong>Дата создания:</strong> @Model.DateOfCreation</p>
-<p>@Model.Description</p>
+<h2>@Model.Theme.Title</h2>
+<p><strong>Автор:</strong> @Model.Theme.User?.NickName</p>
+<p><strong>Дата создания:</strong> @Model.Theme.DateOfCreation</p>
+<p>@Model.Theme.Description</p>
 <button id="reply-button" class="btn btn-primary">Ответить</button>
 
 <h3>Комментарии</h3>
-<table class="table">
-    <thead>
-    <tr>
-        <th></th>
-        <th>Автор</th>
-        <th>Комментарий</th>
-        <th>Дата</th>
-    </tr>
-    </thead>
-    <tbody id="messages">
-    @if (Model.Messages.Count > 0)
-    {
-        
-        @foreach (var message in Model.Messages)
+<div id="messages-container">
+    <table class="table">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Автор</th>
+            <th>Комментарий</th>
+            <th>Дата</th>
+        </tr>
+        </thead>
+        <tbody id="messages">
+        @if (Model.Messages.Count > 0)
+        {
+            @foreach (var message in Model.Messages)
+            {
+                <tr>
+                    <td><img src="@message.User?.Avatar" alt="Avatar" width="50" height="50" /></td>
+                    <td>@message.User?.NickName</td>
+                    <td>@message.Text</td>
+                    <td>@message.DateOfSend</td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td><img src="@message.User?.Avatar" alt="Avatar" width="50" height="50" /></td>
-                <td>@message.User?.NickName</td>
-                <td>@message.Text</td>
-                <td>@message.DateOfSend</td>
+                <td colspan="4">Пока сообщений не добавлено</td>
             </tr>
         }
-    }
-    else
-    {
-        <tr>
-            <td colspan="3">Пока сообщений не добавлено</td>
-        </tr>
+        </tbody>
+    </table>
 
-    }
-    </tbody>
-</table>
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            @if (Model.PageViewModel.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="@(Model.PageViewModel.PageNumber - 1)">Назад</a>
+                </li>
+            }
+            @for (int i = 1; i <= Model.PageViewModel.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageViewModel.PageNumber ? "active" : "")">
+                    <a class="page-link" href="#" data-page="@i">@i</a>
+                </li>
+            }
+            @if (Model.PageViewModel.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="@(Model.PageViewModel.PageNumber + 1)">Вперед</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
 <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -56,7 +80,7 @@
                     <div class="form-group">
                         <label for="text">Комментарий:</label>
                         <textarea id="text" name="text" class="form-control"></textarea>
-                        <input type="hidden" id="themeId" name="themeId" value="@Model.Id" />
+                        <input type="hidden" id="themeId" name="themeId" value="@Model.Theme.Id" />
                         <span class="text-danger" id="error-message"></span>
                     </div>
                     <button type="submit" class="btn btn-primary">Отправить</button>
@@ -69,4 +93,100 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+            $(document).ready(function () {
+                $('#reply-button').on('click', function () {
+                    var replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+                    replyModal.show();
+                });
+    
+                $('#message-form').on('submit', function (e) {
+                    e.preventDefault();
+                    var form = $(this);
+                    var actionUrl = '/Theme/AddMessage';
+                    $.ajax({
+                        type: 'POST',
+                        url: actionUrl,
+                        data: form.serialize(),
+                        success: function (response) {
+                            if (response.success) {
+                                var totalPages = response.totalPages;
+                                var themeId = @Model.Theme.Id;
+                                $.get('/Theme/Details', { themeId: themeId, page: totalPages }, function (data) {
+                                    if (data.success) {
+                                        var messagesHtml = '';
+                                        $.each(data.messages, function (index, message) {
+                                            messagesHtml += '<tr>' +
+                                                '<td><img src="' + message.userAvatar + '" alt="Avatar" width="50" height="50" /></td>' +
+                                                '<td>' + message.userNickName + '</td>' +
+                                                '<td>' + message.text + '</td>' +
+                                                '<td>' + message.dateOfSend + '</td>' +
+                                                '</tr>';
+                                        });
+                                        $('#messages').html(messagesHtml);
+    
+                                        var paginationHtml = '';
+                                        if (data.pagination.hasPreviousPage) {
+                                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (data.pagination.currentPage - 1) + '">Назад</a></li>';
+                                        }
+                                        for (var i = 1; i <= data.pagination.totalPages; i++) {
+                                            paginationHtml += '<li class="page-item ' + (i == data.pagination.currentPage ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+                                        }
+                                        if (data.pagination.hasNextPage) {
+                                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (data.pagination.currentPage + 1) + '">Вперед</a></li>';
+                                        }
+                                        $('.pagination').html(paginationHtml);
+    
+                                        $('#text').val('');
+                                        $('#replyModal').modal('hide');
+                                        $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
+                                    }
+                                });
+                            } else {
+                                $('#error-message').text('Произошла ошибка при добавлении комментария.');
+                            }
+                        },
+                        error: function (response) {
+                            var errorMessage = "Произошла ошибка при добавлении комментария.";
+                            if (response.responseText) {
+                                errorMessage += " " + response.responseText;
+                            }
+                            $('#error-message').text(errorMessage);
+                        }
+                    });
+                });
+    
+                $(document).on('click', '.page-link', function (e) {
+                    e.preventDefault();
+                    var page = $(this).data('page');
+                    var themeId = @Model.Theme.Id;
+                    $.get('/Theme/Details', { themeId: themeId, page: page }, function (data) {
+                        if (data.success) {
+                            var messagesHtml = '';
+                            $.each(data.messages, function (index, message) {
+                                messagesHtml += '<tr>' +
+                                    '<td><img src="' + message.userAvatar + '" alt="Avatar" width="50" height="50" /></td>' +
+                                    '<td>' + message.userNickName + '</td>' +
+                                    '<td>' + message.text + '</td>' +
+                                    '<td>' + message.dateOfSend + '</td>' +
+                                    '</tr>';
+                            });
+                            $('#messages').html(messagesHtml);
+    
+                            var paginationHtml = '';
+                            if (data.pagination.hasPreviousPage) {
+                                paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (data.pagination.currentPage - 1) + '">Назад</a></li>';
+                            }
+                            for (var i = 1; i <= data.pagination.totalPages; i++) {
+                                paginationHtml += '<li class="page-item ' + (i == data.pagination.currentPage ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+                            }
+                            if (data.pagination.hasNextPage) {
+                                paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (data.pagination.currentPage + 1) + '">Вперед</a></li>';
+                            }
+                            $('.pagination').html(paginationHtml);
+                        }
+                    });
+                });
+            });
+        </script>
 }

@@ -57,15 +57,46 @@ public class ThemeController : Controller
         }
         return View(theme);
     }
-    public async Task<IActionResult> Details(int? themeId)
+    public async Task<IActionResult> Details(int? themeId, int page = 1)
     {
+        int pageSize = 5;
         var theme = await _context.Themes.Include(t => t.User).Include(t => t.Messages)
             .FirstOrDefaultAsync(t => t.Id == themeId);
         if (theme == null)
         {
             return NotFound();
         }
-        return View(theme);
+        var messages = theme.Messages.OrderBy(m => m.DateOfSend);
+        var count = messages.Count();
+        var items = messages.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        var viewModel = new MessageIndexViewModel
+        {
+            Theme = theme,
+            Messages = items,
+            PageViewModel = new PageViewModel(count, page, pageSize)
+        };
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            return Json(new
+            {
+                success = true,
+                messages = items.Select(m => new
+                {
+                    UserAvatar = m.User?.Avatar,
+                    UserNickName = m.User?.NickName,
+                    Text = m.Text,
+                    DateOfSend = m.DateOfSend.ToString("g")
+                }),
+                pagination = new
+                {
+                    hasPreviousPage = viewModel.PageViewModel.HasPreviousPage,
+                    hasNextPage = viewModel.PageViewModel.HasNextPage,
+                    currentPage = viewModel.PageViewModel.PageNumber,
+                    totalPages = viewModel.PageViewModel.TotalPages
+                }
+            });
+        }
+        return View(viewModel);
     }
 
     public async Task<IActionResult> AddMessage(int themeId, string text)
@@ -88,7 +119,9 @@ public class ThemeController : Controller
 
         _context.Messages.Add(message);
         await _context.SaveChangesAsync();
-
+        var totalMessages = await _context.Messages.CountAsync(m => m.ThemeId == themeId);
+        var messagesPerPage = 5; 
+        var totalPages = (int)Math.Ceiling(totalMessages / (double)messagesPerPage);
         var messageWithUser = await _context.Messages
             .Include(m => m.User)
             .FirstOrDefaultAsync(m => m.Id == message.Id);
@@ -108,7 +141,8 @@ public class ThemeController : Controller
                 Text = messageWithUser.Text,
                 DateOfSend = messageWithUser.DateOfSend.ToString("g"),
                 Avatar = messageWithUser.User?.Avatar
-            }
+            },
+            totalPages
         });
     }
 
