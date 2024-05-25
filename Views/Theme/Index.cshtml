@@ -23,9 +23,9 @@
     <tbody>
         @foreach (var theme in Model.Themes)
         {
-            <tr>
+            <tr class="clickable-row" data-url="@Url.Action("Details", "Theme", new { themeId = theme.Id })">
                 <td>
-                    <a asp-action="Details" asp-controller="Theme" asp-route-themeId="@theme.Id">@theme.Title</a>
+                    @theme.Title
                 </td>
                 <td>@theme.DateOfCreation</td>
                 <td>@theme.User?.NickName</td>
@@ -50,3 +50,13 @@
         <a asp-action="Index" asp-route-page="@(Model.PageViewModel.PageNumber + 1)" class="btn btn-default">Вперед</a>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".clickable-row").click(function () {
+                window.location = $(this).data("url");
+            });
+        });
+    </script>
+}
