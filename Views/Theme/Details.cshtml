@@ -5,11 +5,13 @@
     Layout = "_Layout";
 }
 
-<h2>@Model.Theme.Title</h2>
-<p><strong>Автор:</strong> @Model.Theme.User?.NickName</p>
-<p><strong>Дата создания:</strong> @Model.Theme.DateOfCreation</p>
-<p>@Model.Theme.Description</p>
-<button id="reply-button" class="btn btn-primary">Ответить</button>
+<div class="fixed-header">
+    <h2>@Model.Theme.Title</h2>
+    <p><strong>Автор:</strong> @Model.Theme.User?.NickName</p>
+    <p><strong>Дата создания:</strong> @Model.Theme.DateOfCreation</p>
+    <p>@Model.Theme.Description</p>
+    <button id="reply-button" class="btn btn-primary">Ответить</button>
+</div>
 
 <h3>Комментарии</h3>
 <div id="messages-container">

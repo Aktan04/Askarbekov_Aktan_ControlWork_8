@@ -18,6 +18,7 @@ public class ThemeController : Controller
         _userManager = userManager;
     }
 
+    [Authorize]
     public async Task<IActionResult> Index(int page = 1)
     {
         int pageSize = 3;                
@@ -36,6 +37,7 @@ public class ThemeController : Controller
         return View(viewModel);
     }
     
+    [Authorize]
     public async Task<IActionResult> Create()
     {
         return View();
@@ -57,10 +59,13 @@ public class ThemeController : Controller
         }
         return View(theme);
     }
+    
+    [Authorize]
     public async Task<IActionResult> Details(int? themeId, int page = 1)
     {
         int pageSize = 5;
         var theme = await _context.Themes.Include(t => t.User).Include(t => t.Messages)
+            .ThenInclude(m => m.User)
             .FirstOrDefaultAsync(t => t.Id == themeId);
         if (theme == null)
         {
@@ -98,7 +103,8 @@ public class ThemeController : Controller
         }
         return View(viewModel);
     }
-
+    
+    [Authorize]
     public async Task<IActionResult> AddMessage(int themeId, string text)
     {
 

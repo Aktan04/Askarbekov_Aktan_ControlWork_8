@@ -51,7 +51,8 @@ public class AccountController : Controller
 
         return View(user);
     }
-
+    
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Edit(User user)
     {
